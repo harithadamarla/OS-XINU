@@ -1,0 +1,49 @@
+1) Orphan process :
+
+An orphan process is the one, that doesn't have a parent, that is , parent is killed prior to child's execution.
+
+eg:
+void main(){
+int pid;
+pid=fork();
+exit(1)//parent exited , i.e it parent completed its execution,but still child is alive
+if(pid==0)
+{
+//child process
+printf("I am alive");
+
+}
+}
+
+2) Zombie process :
+
+Zombie process is a process, in which parent could not collect the status of child, before child gets terminated, and hence its entries are still present in the processtable.
+
+eg:
+
+void main(){
+
+int pid;
+pid=fork();
+if(pid>0){
+
+sleep(50);//so parent will be in the sleep state, by the time child completes its execution
+
+}
+if(pid==0){
+
+print("i am child and i have born");
+
+}
+}
+
+
+3) What are the changes that occur when Exec() system call is made:
+
+We will use this system call, to execute a file.When ever a call is made to exec, it replaces the current process image with the new one, according to the arguments passed to it. Since this system call is not creating a new process, and is only replacing the exisiting process, a new process id is not alloted, and hence it uses the same process id as earlier, but code,data,heap and stack of the process are replaced by those of the new process.Since it replaces the caller process image with the new one, it can never go back to the parent.
+
+So when exec() call is made, it looks for the executable program, that is passed as an argument, verifies the execute permission , copies arguments and environ to kernel,frees the old address space, and allocates the new address space. 
+
+
+
+ 
