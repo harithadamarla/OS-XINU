@@ -1,0 +1,20 @@
+a)
+Probably the concept of inter process communication using polling and semaphores are two things learnt from it. Polling being an asynchronous way of communication,
+semaphores communicate synchrnously using wait and signal system calls. In Polling system wastes lot of cpu cycles, since process keeps on checking the address space, 
+if the value in it is update by new value or not. In Semaphores, unless a process communicate/inform to other process using signal, the other process doesn't attempt toread the value. In both the mechanism, only one process is active at any given time,but in the asynchronous way, i.e polling, we can't predict the order of execution ofprocesses, where as in synchronous way we will be able to predict the next active process. Also learned how to create a process using create system call. Understood 
+that simply the creation of process doesn't get the process to running state,but we need to resume it,to make it run from the suspended state.Understood the concept of volatile , which gives the privilege for a process to continuously check the address space for a change in its value.
+
+
+b)
+The 2 mistakes done are:
+
+1)I was unable to figure out how to establish the link between processno. and mailbox(global_array) associated to that process. Ideally each process should read from its own mailbox and write into its adjacent process mailbox.So this has been solved by passing the index value during creation of process itself from file xsh_process_ring.c to function written in process_ring.c  
+
+2)During execution and implementation of semaphores,dint use done_sem initially and process is getting terminated without the proper termination,and sometimes also giving the segmentation fault.Later understood, that done_sem needs to be created with 0 initially and should be signalled after end of each process, and parallely need to use wait(done_sem)equal to no. of processes created.
+
+3)During implementation of polling, initially thought that only the array that I am maintaining to read and write values,has to be maintained volatile, but understood that what all variables that are getting updated during this process needs to be maintained volatile.  
+
+c)
+
+I have made several changes to code,during implementation of polling,not understanding the concept of polling.
+If I restart this assignment,I would have properly structured the design and modules for 'help', and would have structured the functions for semaphore and polling, priorly understanding what parameters it would require ideally. 
