@@ -8,6 +8,8 @@ void poll(int process_count,int rounds_count,volatile int *globalarray)
 {
          volatile int32 rounds_local = 0;
 
+	 
+
 	 printf("Number of Processes:%d\n",process_count);
          printf("Number of Rounds:%d\n",rounds_count);
 	 int y;
@@ -73,10 +75,12 @@ shellcmd xsh_process_ring(int32 argc,char *args[])
 	int  process_count=2;
 	int  rounds_count=3;
 
-	int i,r,flag=0;
+	int i,j,r,flag=0;
 
 	volatile int globalarray[process_count];
-
+	
+	for(j=0;j<process_count;j++)
+	globalarray[j]=-1;
 
 	for(r=0;r<process_count;r++)
 	{
