@@ -24,7 +24,7 @@ void poll(int process_count,int rounds_count,volatile int *globalarray)
 void sem(int process_count,int rounds_count,volatile int *globalarray)
 {
 
-	int a,k,l,m,n,b;
+	int a,k,l,n;
         sid32 semarray[process_count];
 	sid32 done_sem[process_count];
 
