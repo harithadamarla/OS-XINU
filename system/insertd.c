@@ -20,20 +20,32 @@ status	insertd(			/* Assumes interrupts disabled	*/
 	}
 
 	prev = queuehead(q);
-	next = queuetab[queuehead(q)].qnext;
+//	next = queuetab[queuehead(q)].qnext;
+	next = (queuetab[queuehead(q)].qnext)->pid;
+
+
 	while ((next != queuetail(q)) && (queuetab[next].qkey <= key)) {
 		key -= queuetab[next].qkey;
 		prev = next;
-		next = queuetab[next].qnext;
+//		next = queuetab[next].qnext;
+		next = (queuetab[next].qnext)->pid;
 	}
 
 	/* Insert new node between prev and next nodes */
 
-	queuetab[pid].qnext = next;
-	queuetab[pid].qprev = prev;
+	(queuetab[pid].qnext)->pid =next;
+	
+//	queuetab[pid].qnext = next;
+	(queuetab[pid].qprev)->pid = prev;
+//	queuetab[pid].qprev = prev;
+	
 	queuetab[pid].qkey = key;
-	queuetab[prev].qnext = pid;
-	queuetab[next].qprev = pid;
+	
+	(queuetab[prev].qnext)->pid=pid;
+//	queuetab[prev].qnext = pid;
+
+	(queuetab[next].qprev)->pid=pid;
+//	queuetab[next].qprev = pid;
 	if (next != queuetail(q)) {
 		queuetab[next].qkey -= key;
 	}

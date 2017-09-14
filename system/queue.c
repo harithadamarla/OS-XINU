@@ -8,11 +8,21 @@ struct qentry	queuetab[NQENT];	/* Table of process queues	*/
  *  enqueue  -  Insert a process at the tail of a queue
  *------------------------------------------------------------------------
  */
+
+//struct qentry* getNewNode(pid32 pid,qid q)
+
+
+
+
+
+
+
 pid32	enqueue(
 	  pid32		pid,		/* ID of process to insert	*/
 	  qid16		q		/* ID of queue to use		*/
 	)
 {
+	
 	qid16	tail, prev;		/* Tail & previous node indexes	*/
 
 	if (isbadqid(q) || isbadpid(pid)) {
@@ -20,12 +30,22 @@ pid32	enqueue(
 	}
 
 	tail = queuetail(q);
-	prev = queuetab[tail].qprev;
+//	prev = queuetab[tail].qprev;
+	prev = (queuetab[tail].qprev)->pid;
 
-	queuetab[pid].qnext  = tail;	/* Insert just before tail node	*/
-	queuetab[pid].qprev  = prev;
-	queuetab[prev].qnext = pid;
-	queuetab[tail].qprev = pid;
+
+//	queuetab[pid].qnext  = tail;	/* Insert just before tail node	*/
+	(queuetab[pid].qnext)->pid  = tail;
+
+//	queuetab[pid].qprev  = prev;
+	(queuetab[pid].qprev)->pid=prev;
+
+//	queuetab[prev].qnext = pid;
+	(queuetab[prev].qnext)->pid =pid;
+
+//	queuetab[tail].qprev = pid;
+	(queuetab[tail].qprev)->pid =pid;
+	
 	return pid;
 }
 
@@ -46,7 +66,11 @@ pid32	dequeue(
 	}
 
 	pid = getfirst(q);
-	queuetab[pid].qprev = EMPTY;
-	queuetab[pid].qnext = EMPTY;
+//	queuetab[pid].qprev = EMPTY;
+	(queuetab[pid].qprev)->pid = EMPTY;
+
+//	queuetab[pid].qnext = EMPTY;
+	(queuetab[pid].qnext)->pid = EMPTY;
+	
 	return pid;
 }
