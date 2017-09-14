@@ -38,12 +38,12 @@ extern	struct qentry	queuetab[];
 //#define	queuehead(q)	(q)
 #define	queuetail(q)	((q) + 1)
 
-//#define firstid(q)	(queuetab[queuehead(q)]->qnext)
-#define	firstid(q)	(queuetab[queuehead(q)].qnext)
-#define	lastid(q)	(queuetab[queuetail(q)].qprev)
-#define isempty(q)      (firstid(q)->pid) >= NPROC
+#define firstid(q)	(queuetab[queuehead(q)].qnext)->pid
+//#define	firstid(q)	(queuetab[queuehead(q)].qnext)
+#define	lastid(q)	(queuetab[queuetail(q)].qprev)->pid
+//#define isempty(q)      (firstid(q)->pid) >= NPROC
 
-//#define	isempty(q)	(firstid(q) >= NPROC)
+#define	isempty(q)	(firstid(q) >= NPROC)
 #define	nonempty(q)	(firstid(q) <  NPROC)
 #define	firstkey(q)	(queuetab[firstid(q)].qkey)
 #define	lastkey(q)	(queuetab[ lastid(q)].qkey)
