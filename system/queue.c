@@ -12,40 +12,43 @@ struct qentry	queuetab[NQENT];	/* Table of process queues	*/
 //struct qentry* getNewNode(pid32 pid,qid q)
 
 
-
-
-
-
-
 pid32	enqueue(
 	  pid32		pid,		/* ID of process to insert	*/
 	  qid16		q		/* ID of queue to use		*/
 	)
 {
 	
-	qid16	tail, prev;		/* Tail & previous node indexes	*/
+//	qid16	tail, prev;		/* Tail & previous node indexes	*/
+
+	struct qentry *tail;
+	struct qentry *prev;
 
 	if (isbadqid(q) || isbadpid(pid)) {
 		return SYSERR;
 	}
-
-	tail = queuetail(q);
+	tail =&queuetab[queuetail(q)];
+//	tail = queuetail(q);
 //	prev = queuetab[tail].qprev;
-	prev = (queuetab[tail].qprev)->pid;
-
+//	prev = (queuetab[tail].qprev)->pid;
+	prev = queuetab[tail->pid].qprev;
+	
 
 //	queuetab[pid].qnext  = tail;	/* Insert just before tail node	*/
-	(queuetab[pid].qnext)->pid  = tail;
-
+//	(queuetab[pid].qnext)->pid  = tail;
+	queuetab[tail->pid].qprev=&queuetab[pid];
+	
 //	queuetab[pid].qprev  = prev;
-	(queuetab[pid].qprev)->pid=prev;
+//	(queuetab[pid].qprev)->pid=prev;
+	queuetab[pid].qnext=&queuetab[tail->pid];
 
 //	queuetab[prev].qnext = pid;
-	(queuetab[prev].qnext)->pid =pid;
+//	(queuetab[prev].qnext)->pid =pid;
 
 //	queuetab[tail].qprev = pid;
-	(queuetab[tail].qprev)->pid =pid;
-	
+//	(queuetab[tail].qprev)->pid =pid;
+	queuetab[pid].qprev=prev;
+	prev->qnext=&queuetab[pid];
+		
 	return pid;
 }
 
@@ -66,11 +69,11 @@ pid32	dequeue(
 	}
 
 	pid = getfirst(q);
-//	queuetab[pid].qprev = EMPTY;
-	(queuetab[pid].qprev)->pid = EMPTY;
+	queuetab[pid].qprev = NULL;
+//	(queuetab[pid].qprev)->pid = EMPTY;
 
-//	queuetab[pid].qnext = EMPTY;
-	(queuetab[pid].qnext)->pid = EMPTY;
+	queuetab[pid].qnext = NULL;
+//	(queuetab[pid].qnext)->pid = EMPTY;
 	
 	return pid;
 }
