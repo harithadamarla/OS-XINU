@@ -20,7 +20,7 @@ qid16	newqueue(void)
 
 	/* Initialize head and tail nodes to form an empty queue */
 
-//	queuetab[queuehead(q)].qnext = queuetail(q);
+
 	queuetab[queuehead(q)].qnext = &queuetab[queuetail(q)];
 
 	queuetab[queuehead(q)].qprev = NULL;
