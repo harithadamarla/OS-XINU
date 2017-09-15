@@ -25,8 +25,13 @@ qid16	newqueue(void)
 
 	queuetab[queuehead(q)].qprev = NULL;
 	queuetab[queuehead(q)].qkey  = MAXKEY;
+
+	queuetab[queuehead(q)].pid   = q;
+
 	queuetab[queuetail(q)].qnext = NULL;
 	queuetab[queuetail(q)].qprev = &queuetab[queuehead(q)];
 	queuetab[queuetail(q)].qkey  = MINKEY;
+
+	queuetab[queuetail(q)].pid   = q+1;	
 	return q;
 }
