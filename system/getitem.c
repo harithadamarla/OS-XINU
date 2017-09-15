@@ -69,8 +69,8 @@ pid32	getitem(
 //	next =queuetab[pid].qnext;
 //	prev=queuetab[pid].qprev;
 
-	next = &(queuetab[pid].qnext);
-	prev = &(queuetab[pid].qprev);
+	next = &queuetab[pid].qnext;
+	prev = &queuetab[pid].qprev;
 
 //	prev.qnext = next;
 //	next.qprev = prev;
