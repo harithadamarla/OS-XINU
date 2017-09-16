@@ -12,7 +12,7 @@ pid32	getfirst(
 					/*   valid with no check)	*/
 {
 	pid32	head;
-	
+//checking if the q passed is in range or not	
 	if(isbadqid(q))
 	{
 		return SYSERR;
