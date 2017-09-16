@@ -12,19 +12,17 @@ pid32	getfirst(
 					/*   valid with no check)	*/
 {
 	pid32	head;
-//	struct qentry *head;
+
 	
 	
 	if (isempty(q)) {
 		return EMPTY;
 	}
 
-//	head = queuehead(q);
 	
 	head= queuehead(q);
 
 	return getitem((queuetab[head].qnext)->pid);
-//	return getitem((head->qnext)->pid);
 
 }
 
@@ -53,27 +51,26 @@ pid32	getlast(
  */
 pid32	getitem(
 	  pid32		pid		/* ID of process to remove	*/
-//struct qentry *nextpid
+
 
 	)
 {
-//	pid32	prev, next;
+
 
 	 struct qentry *next;
 	 struct qentry *prev;
 
 
-//	next = nextpid.qnext;	/* Following node in list	*/
-//	prev = nextpid.qprev;	/* Previous node in list	*/
 
-//	next =queuetab[pid].qnext;
-//	prev=queuetab[pid].qprev;
+
+
+
 
 	next = queuetab[pid].qnext;
 	prev = queuetab[pid].qprev;
 
-//	prev.qnext = next;
-//	next.qprev = prev;
+
+
 
 	prev->qnext=next;
 	next->qprev=prev;

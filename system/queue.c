@@ -9,8 +9,6 @@ struct qentry	queuetab[NQENT];	/* Table of process queues	*/
  *------------------------------------------------------------------------
  */
 
-//struct qentry* getNewNode(pid32 pid,qid q)
-
 
 pid32	enqueue(
 	  pid32		pid,		/* ID of process to insert	*/
