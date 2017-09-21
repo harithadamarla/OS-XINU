@@ -82,3 +82,5 @@ extern  shellcmd xsh_mmu	(int32, char *[]);
 /* in file xsh_process_ring.c */
 extern shellcmd xsh_process_ring(int32, char *[]);
 
+/* in file xsh_resume_test.c */
+extern shellcmd xsh_resume_test(int32, char*[]);
