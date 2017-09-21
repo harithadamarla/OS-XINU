@@ -29,11 +29,13 @@ syscall	kill(
 	for (i=0; i<3; i++) {
 		close(prptr->prdesc[i]);
 	}
+	if(prptr->prstate !=PR_CURR)
 	freestk(prptr->prstkbase, prptr->prstklen);
 
 	switch (prptr->prstate) {
 	case PR_CURR:
-		prptr->prstate = PR_FREE;	/* Suicide */
+	//	prptr->prstate = PR_FREE;	/* Suicide */
+		prptr->prstate = PR_DYING;
 		resched();
 
 	case PR_SLEEP:
