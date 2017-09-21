@@ -139,13 +139,25 @@ local	pid32	newpid(void)
 
 	/* check all NPROC slots */
 
-	for (i = 0; i < NPROC; i++) {
+/*	for (i = 0; i < NPROC; i++) {
 		nextpid %= NPROC;	/* wrap around to beginning */
-		if (proctab[nextpid].prstate == PR_FREE) {
+/*		if (proctab[nextpid].prstate == PR_FREE) {
 			return nextpid++;
 		} else {
 			nextpid++;
 		}
-	}
+	}*/
+
+	for(i=0;i<NPROC;i++)
+	{
+		nextpid %=NPROC;
+		if(proctab[nextpid].prstate==PR_SUSPEND){
+			return nextpid;
+		}else{
+			nextpid++;
+		}
+	}	
+
+
 	return (pid32) SYSERR;
 }
