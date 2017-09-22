@@ -2,7 +2,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-void print1(int x,struct procent *ptr)
+/*void print1(int x,struct procent *ptr)
 {
 //	int b;
 
@@ -29,33 +29,27 @@ void print0(int x)
 //	exit(0);
 	return OK;
 
+}*/
+void test(int x)
+{
+struct procent *ptr;
+ptr=&proctab[getpid()];
+ptr->prprio=40;
 }
 
 shellcmd xsh_resume_test(int nargs, char* args[])
 {
 	pid32 a;
-// 	struct procent *ptr;
+	int n;
 
-	//ptr=&proctab[getpid()];i
-	//
-	a=create(print0,1024,20,"print0",1,4);
+	a=create(test,1024,30,"print0",1,4);
+	
 
-
-	resume(a);
-
-// 	a=create(print1,1024,20,"print1",2,5,ptr);
-//	ptr=&proctab[a];
+	n=resume(a);
 
 
-//	printf("Before calling modified resume\n");
-//	printf("printing prio %d",ptr->prprio);
+	printf("priority of the process %d\n",n);
 
- //	printf("After calling modified resume : print1 priority %d\n",resume(a));
-
-//	printf("Check if priority changed : %d\n",ptr->prprio);
-
-//	wait(NULL);
-//	exit(1);
 	sleep(1);
 	return 0;
 
