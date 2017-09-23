@@ -24,10 +24,10 @@ pri16	resume(
 		restore(mask);
 		return (pri16)SYSERR;
 	}
-	prio = prptr->prprio;		/* Record priority to return	*/
+//	prio = prptr->prprio;		/* Record priority to return	*/
 	ready(pid);
 //	sleep(1);
-//	prio = prptr->prprio;
+	prio = prptr->prprio;
 	restore(mask);
 	return prio;
 }
