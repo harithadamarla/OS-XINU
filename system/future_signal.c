@@ -15,7 +15,7 @@ syscall future_signal(future_t* f)
 			case FUTURE_SHARED:
 				while(!isempty(f->get_queue))
 				{
-				//	printf("I am in future_signal.c test in shared mode\n trying to empy get_queue ");
+
 					ready(dequeue(f->get_queue));
 				}
 				break;

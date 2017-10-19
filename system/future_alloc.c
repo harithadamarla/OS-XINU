@@ -9,7 +9,7 @@ f->mode=mode;
 f->state=FUTURE_EMPTY;
 f->value=0;
 
-//if 
+//allocate the queue based on the mode of the future
 
 f->set_queue=-1;
 f->get_queue=-1;
