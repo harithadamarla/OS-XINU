@@ -34,6 +34,14 @@ int fs_fileblock_to_diskblock(int dev, int fd, int fileblock);
 
 /* YOUR CODE GOES HERE */
 
+struct dirent *dirent_ptr;
+struct filetable *filetable_ptr;
+#define FIRST_DATA_BLOCK (2+NUM_INODE_BLOCKS)
+static int next_free_data_block;
+static int next_free_inode;
+
+
+
 int fs_fileblock_to_diskblock(int dev, int fd, int fileblock) {
   int diskblock;
 
@@ -218,27 +226,387 @@ void fs_printfreemask(void) {
 
 
 int fs_open(char *filename, int flags) {
-  return SYSERR;
+
+//flag is the mode of the file which can be O_RDONLY,O_WRONLY,O_RDWR
+	int i;
+//	struct dirent *dirent_ptr;
+//	struct filetable *filetable_ptr;
+
+	if(flags>=0&&flags<=2)
+	{
+		//check if the file is existing or not
+		for(i=0;i<DIRECTORY_SIZE;i++)
+		{
+			dirent_ptr=&fsd.root_dir.entry[i];
+			if(strncmp(dirent_ptr->name,filename,FILENAMELEN)==0)
+			{
+				//implies file is existing;
+				//therefore allocate an entry in file table
+				break;
+			}
+	
+		}
+		if(i==DIRECTORY_SIZE)
+		{
+			printf("FILE NOT FOUND\n");
+			return SYSERR;
+		}
+		//since we found file is exisiting check if there is any empty slot in the file table or not.We can open a file,only if there is an empty slot it the file table.
+		for(i=0;i<NUM_FD;i++)
+		{
+			if(oft[next_open_fd].state==FSTATE_CLOSED)
+			{
+				//we found one empty slot
+				break;
+			}
+			next_open_fd++;
+			if(next_open_fd>=NUM_FD)
+			{
+				next_open_fd=0;
+			}
+		}
+		if(oft[next_open_fd].state!=FSTATE_CLOSED)
+		{
+			printf("file exists but cannot open since max files are already opened");
+			return SYSERR;
+		}
+		
+		filetable_ptr=&oft[next_open_fd];
+
+		filetable_ptr->state=FSTATE_OPEN;
+		filetable_ptr->fileptr=0;
+        	filetable_ptr->de=dirent_ptr;
+
+		fs_get_inode_by_num(dev0,dirent_ptr->inode_num,&filetable_ptr->in);
+
+//		memcpy(&filetable_ptr->in,&in,sizeof(struct inode));
+
+//		memcpy(oft+fsd,&filetable,sizeof(struct filetable));
+		return next_open_fd;
+
+	}
+
+ 	 return SYSERR;
 }
 
 int fs_close(int fd) {
-  return SYSERR;
+
+	filetable_ptr=&oft[fd];
+	if(filetable_ptr->state==FSTATE_OPEN)
+	{
+		filetable_ptr->state=FSTATE_CLOSED;
+		return OK;	
+	}
+	else
+	{
+		printf("file is not open\n");
+		
+	}
+	return SYSERR;
+
 }
 
 int fs_create(char *filename, int mode) {
-  return SYSERR;
+
+	int i;
+
+	if(mode!=O_CREAT)
+	{
+		return SYSERR;
+	}
+	if(strlen(filename)>FILENAMELEN)
+	{
+		return SYSERR;
+	}
+	//iterate through the directory structure if the file already exists or not
+	for(i=0;i<DIRECTORY_SIZE;i++)
+	{
+		dirent_ptr=&fsd.root_dir.entry[i];
+		if(strncmp(dirent_ptr->name,filename,FILENAMELEN))
+		{
+			printf("file already exists");
+			return SYSERR;
+		}
+	
+	}
+	 //increase the numofentries and assign the new dirent_ptr
+	 dirent_ptr=&fsd.root_dir.entry[fsd.root_dir.numentries++];
+	 strncpy(dirent_ptr->name,filename,FILENAMELEN-1);
+	 dirent_ptr->name[FILENAMELEN-1]='\0';
+	 dirent_ptr->inode_num=-1;
+	 
+	 //create an entry in file table
+	 for(i=0;i<NUM_FD;i++)
+	 {
+		if(oft[next_open_fd].state==FSTATE_CLOSED)
+		{
+			break;
+		}
+		next_open_fd++;
+		if(next_open_fd>=NUM_FD)
+		{
+			next_open_fd=0;
+		}
+	 }
+	 if(oft[next_open_fd].state!=FSTATE_CLOSED)
+	 {
+		printf("sorry max files opened already");
+		return SYSERR;
+	 }
+	 filetable_ptr=&oft[next_open_fd];
+	 filetable_ptr->state=FSTATE_OPEN;
+	 filetable_ptr->fileptr=0;
+	 filetable_ptr->de=dirent_ptr;
+
+	//search for empty inode
+	for(i=0;i<fsd.ninodes;i++)
+	{
+		fs_get_inode_by_num(0, next_free_inode, &filetable_ptr->in);
+		if(filetable_ptr->in.id < 0 || filetable_ptr->in.id >= fsd.ninodes) {
+			break;
+		}
+		next_free_inode++;
+		if(next_free_inode>=fsd.ninodes)
+		{
+			next_free_inode=0;
+		}
+	}
+
+	if(!(filetable_ptr->in.id < 0 || filetable_ptr->in.id >= fsd.ninodes)) {
+		printf("max files limit reached\n");
+		return SYSERR;			
+	}
+
+	filetable_ptr->in.id = next_free_inode;
+	filetable_ptr->in.type = INODE_TYPE_FILE;
+	filetable_ptr->in.nlink = 0;
+	filetable_ptr->in.device = 0;
+	filetable_ptr->in.size = 0;
+
+	dirent_ptr->inode_num = next_free_inode;
+
+	fsd.inodes_used++;
+	/* write inode to disk */	
+	fs_put_inode_by_num(dev0, filetable_ptr->in.id, &filetable_ptr->in);
+
+	printf("\nFile %s created and opened successfully.\n",dirent_ptr->name);
+	return next_open_fd;
+
+
 }
 
 int fs_seek(int fd, int offset) {
-  return SYSERR;
-}
 
+	int maxlimit;
+	filetable_ptr=&oft[fd];
+	//check in the filetable, if the file is open or not
+	if(filetable_ptr->state==FSTATE_OPEN)
+	{
+
+		offset=offset+filetable_ptr->fileptr;
+	
+		//max file length;
+		maxlimit=MDEV_BLOCK_SIZE*INODEDIRECTBLOCKS;
+	
+		if(offset<0)
+		{
+			return SYSERR;
+		}  
+	
+		//check if we are trying to read the block greater than the size of the file
+		if( (offset >= filetable_ptr->in.size) || (offset>=maxlimit))
+		{
+			return SYSERR;
+		}
+		filetable_ptr=offset;
+		return filetable_ptr;
+	}
+	return SYSERR;
+}
+/*
 int fs_read(int fd, void *buf, int nbytes) {
-  return SYSERR;
+
+	filetable_ptr=&oft[fd];
+	
+	int maxlength;
+	int offset,block;
+	int currentblocknumber,currentoffsetnumber,length;
+	int transferred_bytes;
+	
+	maxlength=MDEV_BLOCK_SIZE*INODEDIRECTBLOCKS;
+	offset=nbytes+filetable_ptr->fileptr;
+
+	
+	if(nbytes<=0)
+	{
+		return SYSERR;
+	}
+	//reading will happen from the place where file descriptor is present. therefore check if reading nbytes from where filepointer is, will exceed the file size. If exceeds, make it to read only till the end.
+	if(offset>filetable_ptr->in.size)
+	{
+		nbytes=filetable_ptr->in.size - filetable_ptr->fileptr;
+	}
+	//if reading nbytes exceeds the maxfilelength
+	if(offset>=maxlength)
+	{
+		return SYSERR;
+	}
+
+	//before we try to read, check if the file is open
+	if(filetable_ptr->state==FSTATE_OPEN)
+	{
+		//find the block and the offset
+		currentblocknumber=filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
+//		currentblocknumber=filetable_ptr->fileptr/MDEV_BLOCK_SIZE; 
+		currentoffsetnumber=filetable_ptr->fileptr%MDEV_BLOCK_SIZE;
+
+		if(nbytes<(MDEV_BLOCK_SIZE-currentoffsetnumber))
+		{
+			length=nbytes;
+		}
+		else
+		{
+			length=MDEV_BLOCK_SIZE-currentoffsetnumber;
+		}
+		if(bs_bread(dev0,currentblocknumber,currentoffsetnumber,buf,length)!=OK)
+		{
+			return SYSERR;
+		}
+		
+		filetable_ptr->fileptr=filetable_ptr+length;
+		nbytes=nbytes-length;
+		transferred_bytes=transferred_bytes+length;
+		
+
+	//	block=filetable_ptr->in.blocks[currentblocknumber]		  
+
+		while(nbytes>0)
+		{
+			currentblocknumber=filetable_ptr->in.blocks[filetable_ptr/MDEV_BLOCK_SIZE];
+			currentoffsetnumber=0;
+			if(nbytes<MDEV_BLOCK_SIZE)
+			{
+				length=nbytes;
+			}
+			else{
+				length=MDEV_BLOCK_SIZE;
+			}
+			if(block==-1)
+			{
+				break;
+			}
+			if(bs_bread(dev0,block,offset,buf+transferred_bytes,length)!=OK)
+			{
+				return SYSERR;
+			}
+			filetable_ptr->fileptr=filetable_ptr+length;
+			nbytes=nbytes-length;
+			transferred_bytes=transferred_bytes+length;
+
+		}
+		return nbytes;
+
+	}
+
+	  return SYSERR;
 }
 
 int fs_write(int fd, void *buf, int nbytes) {
+
+	int currentblocknumber,currentoffsetnumber,length=0;
+	filetable_ptr=&oft[fd];
+	int length,m;
+	int add_eof=0;
+	int transferred_bytes;
+
+	if(nbytes<0)
+	{
+		return SYSERR;
+	}
+
+	if(offset>=maxlength)
+	{
+		return SYSERR;
+	}
+
+
+	if(filetable_ptr->state==FSTATE_OPEN)
+        {
+
+		 maxlength=MDEV_BLOCK_SIZE*INODEDIRECTBLOCKS;
+	         offset=nbytes+filetable_ptr->fileptr;
+
+		currentblocknumber=filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
+		currentoffsetnumber=filetable_ptr->fileptr%MDEV_BLOCK_SIZE;
+        
+		 if(offset>filetable_ptr->in.size)
+        	 {
+                		add_eof=1;
+        	 }
+
+
+		if(nbytes<(MDEV_BLOCK_SIZE-currentoffsetnumber))
+        	{
+                	length=nbytes;
+        	}
+        	else
+        	{
+                	length=MDEV_BLOCK_SIZE-currentoffsetnumber;
+        	}
+	
+		if(bs_bwrite(dev0,currentblocknumber,currentoffsetnumber,buf,length)!=OK)
+        	{
+                        return SYSERR;
+        	}
+		filetable_ptr->fileptr=filetable_ptr+length;
+        	nbytes=nbytes-length;
+        	transferred_bytes=transferred_bytes+length;
+
+		while(nbytes>0)
+		{
+			for(i=FIRST_DATA_BLOCK;i<fsd.nblocks;i++)
+			{
+				m=fs_getmaskbit(next_free_data_block);
+				if(m==0)
+				{
+					break;
+				}	
+				next_free_data_block++;
+				if(next_free_data_block>=MDEV_NUM_BLOCKS)
+				next_free_data_block=FIRST_DATA_BLOCK;		
+			}
+			if(m!=0)
+			{
+				return SYSERR;
+			}
+			fs_setmaskbit(next_free_data_block);
+			fs_setmaskbit(BM_BLK);
+			bs_bwrite(dev0,BM_BLK,0,fsd.freemask,fsd.freemaskbytes);
+
+			filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE] = next_free_data_block;
+
+			blocknumber = filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
+			offsetnumber = 0;
+			length = nbytes < MDEV_BLOCK_SIZE ? nbytes : MDEV_BLOCK_SIZE;
+			if (bwrite(dev0, block, offset, buf+transferred_bytes, length)!=OK) 
+			{
+		
+				return SYSERR;
+			}
+			filetable_ptr->fileptr =filetable_ptr->fileptr+length;
+			nbytes =nbytes-length;
+			transferred_bytes = transferred_bytes+length;
+
+		}	
+
+		if(add_eof)
+		{
+			filetable_ptr->in.size=filetable_ptr->fileptr;
+		}
+		put_inode_by_num(dev0, filetable_ptr->in.id, &filetable_ptr->in);
+		return nbytes;
+	}
   return SYSERR;
 }
-
+*/
 #endif /* FS */

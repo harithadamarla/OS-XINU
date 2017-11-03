@@ -60,7 +60,7 @@ void sem(int process_count,int rounds_count,volatile int *globalarray)
 	}
 }
 
-void print_usage(void)
+/*void print_usage(void)
 {
 
 printf("Usage:....\n");
@@ -68,7 +68,7 @@ printf("<-p>< --p>: no. of process <0-64>\n");
 printf("<-i>< --i>: <poll or sync>\n");
 printf("--help");
 
-}
+}*/
 shellcmd xsh_process_ring(int32 argc,char *args[])
 {
 //	struct time t;

@@ -58,10 +58,10 @@ shellcmd xsh_fstest(int nargs, char *args[]) {
     buf2 = getmem(SIZE*sizeof(char));
     
     // Create test file
-    fd = fs_create("Test_File", O_CREAT);
+    fd = fs_create("Test_File1", O_CREAT);
        
     // Fill buffer with random stuff
-    for(i=0; i<SIZE; i++)
+/*    for(i=0; i<SIZE; i++)
     {
         j = i%(127-33);
         j = j+33;
@@ -96,7 +96,7 @@ shellcmd xsh_fstest(int nargs, char *args[]) {
     {
         printf("\n\rReturn val for fclose : %d",rval);
     }
-
+*/
 clean_up:
     freemem(buf1,SIZE);
     freemem(buf2,SIZE);
