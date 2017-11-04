@@ -293,6 +293,7 @@ int fs_close(int fd) {
 	if(filetable_ptr->state==FSTATE_OPEN)
 	{
 		filetable_ptr->state=FSTATE_CLOSED;
+		freemem((char *)oft[fd].de, sizeof(struct dirent));
 		return OK;	
 	}
 	else
@@ -417,16 +418,16 @@ int fs_seek(int fd, int offset) {
 			return SYSERR;
 		}
 		filetable_ptr=offset;
-		return filetable_ptr;
+		return (int)filetable_ptr;
 	}
 	return SYSERR;
 }
 
 int fs_read(int fd, void *buf, int nbytes)
 {
-	int i;
+	
 	int transferredbytes=0;
-	int m,blocknumber,length,offsetnumber;
+	int blocknumber,length,offsetnumber;
 	int nbytescopy=nbytes;
 
 	filetable_ptr=&oft[fd];
@@ -488,7 +489,6 @@ int fs_read(int fd, void *buf, int nbytes)
 		nbytes=nbytes-length;
 		transferredbytes=transferredbytes+length;
 	}
-	printf("read %d bytes",nbytescopy);
 	return nbytescopy;	
 }
 int fs_write(int fd, void *buf, int nbytes)
@@ -497,13 +497,13 @@ int fs_write(int fd, void *buf, int nbytes)
         int transferredbytes=0;
         int m,blocknumber,length,offsetnumber;
         int nbytescopy=nbytes;
-	int eof_flag=0;
+
 
 	filetable_ptr=&oft[fd];
-
+//calculate the offset,i.e where the fp will be after writing the nbyte.
 	 int offsetlen=nbytes + filetable_ptr->fileptr;	
 	 int maxlen=MDEV_BLOCK_SIZE * INODEDIRECTBLOCKS;
-
+	//input validations
 	 if(nbytes<0)
         {
                 printf("number of bytes you requested to write is <0");
@@ -512,21 +512,21 @@ int fs_write(int fd, void *buf, int nbytes)
  //check if the file is in open state or not
          if(filetable_ptr->state!=FSTATE_OPEN)
          {
-                                 printf("file is not open\n to write");
-                                                 return SYSERR;
-         }
-	  if(offsetlen>=maxlen)
+                printf("file is not open\n to write");
+                return SYSERR;
+         } 
+//check if the no. of bytes to write is exceeding the file size or not
+	if(offsetlen>=maxlen)
         {
-                printf("bytes requested to read is greater than filesize\n");
+                printf("bytes requested to write is greater than filesize\n");
                 return SYSERR;
         }
-	if(offsetlen>filetable_ptr->in.size)
-	{
-		eof_flag=1;
-	}
-	 blocknumber = filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
+
+
+
+	blocknumber = filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
         offsetnumber = filetable_ptr->fileptr % MDEV_BLOCK_SIZE; 
-	 if(nbytes<(MDEV_BLOCK_SIZE-offsetnumber))
+	if(nbytes<(MDEV_BLOCK_SIZE-offsetnumber))
         {
                 length=nbytes;
         }
@@ -561,7 +561,7 @@ int fs_write(int fd, void *buf, int nbytes)
 			printf("\ncannot write as disk is full\n");
 			return SYSERR;
 		}
-		
+//mark that disk is full		
 		fs_setmaskbit(next_free_data_block);
 		fs_setmaskbit(BM_BLK);
                 bs_bwrite(dev0, BM_BLK, 0, fsd.freemask, fsd.freemaskbytes);
@@ -589,15 +589,9 @@ int fs_write(int fd, void *buf, int nbytes)
                 nbytes=nbytes-length;
                 transferredbytes=transferredbytes+length;
         }
-	if(eof_flag)
-	{
-		 filetable_ptr->in.size = filetable_ptr->fileptr;
-	}
 	fs_put_inode_by_num(dev0,filetable_ptr->in.id,&filetable_ptr->in);
-	 printf("\nwrite of %d bytes\n",nbytescopy);
+	 printf("\nwrite of %d bytes completed\n",nbytescopy);
         return nbytescopy;
-
-
 
 }
 
