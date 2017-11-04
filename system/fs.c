@@ -388,7 +388,7 @@ int fs_create(char *filename, int mode) {
 	/* write inode to disk */	
 	fs_put_inode_by_num(dev0, filetable_ptr->in.id, &filetable_ptr->in);
 
-	printf("\nFile %s created and opened successfully.\n",dirent_ptr->name);
+	printf("\nFile created and opened successfully.\n");
 	return next_open_fd;
 
 
@@ -458,6 +458,7 @@ int fs_read(int fd, void *buf, int nbytes)
 		printf("bytes requested to read is greater than filesize\n");
 		return SYSERR;
 	}
+	//calculate the last block no. and offset it has to read
 	blocknumber = filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
         offsetnumber = filetable_ptr->fileptr % MDEV_BLOCK_SIZE;
 	if(nbytes<(MDEV_BLOCK_SIZE-offsetnumber))
@@ -521,8 +522,6 @@ int fs_write(int fd, void *buf, int nbytes)
                 printf("bytes requested to write is greater than filesize\n");
                 return SYSERR;
         }
-
-
 
 	blocknumber = filetable_ptr->in.blocks[filetable_ptr->fileptr/MDEV_BLOCK_SIZE];
         offsetnumber = filetable_ptr->fileptr % MDEV_BLOCK_SIZE; 
@@ -590,7 +589,7 @@ int fs_write(int fd, void *buf, int nbytes)
                 transferredbytes=transferredbytes+length;
         }
 	fs_put_inode_by_num(dev0,filetable_ptr->in.id,&filetable_ptr->in);
-	 printf("\nwrite of %d bytes completed\n",nbytescopy);
+	printf("\nwrite of %d bytes completed\n",nbytescopy);
         return nbytescopy;
 
 }
