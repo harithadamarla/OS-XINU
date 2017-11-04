@@ -1,0 +1,43 @@
+Report :
+
+The list of files :
+1)include/fs.h
+2)system/fs.c
+3)shell/fstest.c
+4)system/bs.c
+
+1)fs.h :
+ 
+It has all the structures necessary to build the file system (inode,filetable,dirent,directory,fsystem) and has the declarations of all the functions that are needed to implementation.
+
+2)fs.c :
+I have implemented the functions necessary to build the file system such as :
+
+a)fs_create :
+creates the file, by iterating through all the files in the directory. Checks if there is any existing file, with the same name. If there is no such file, it creates a new inode, increases the directory entries count and creates an entry in the file table, and using fs_put_inode_by_num, writes the inode to the disk
+
+b) fs_open :
+Iterates through all the files in the root directory and verify if the file is existing or not. If it exists, check if there exists an empty slot in the open file table, to open it.(This is done by just checking the sate of the filetable entry. If the state of the entry is closed, that slot is empty. Use this slot to open a file). Use fs_get_inode_by_num to open the file from the disk
+	
+c) fs_close :
+		
+Using the file descripted passed to this function, obtain an entry from the file table. Check if the state of that file is Open or not. If it is open, mark the state of it to closed.
+
+d) fs_seek :
+It is called to move offset number of bytes from where the file pointer is existing. Using the file descriptor, obtain the filetable entry and obtain fileptr, and update the offset to fileptr to fileptr+offset
+
+e) fs_read : 
+It is used to read the nbytes from where the file pointer is present and store it in buf. Firstly the no. of blocks and the offset to read are calculated from the nbytes given and used the function bs_bread, in a loop, to read the disk blocks.
+	
+f) fs_write :
+Firstly similar to fs_read, calculated the no. of blocks or offset to write into the disk blocks using the parameter nbytes. Used the function bs_bwrite to write the contents of the buffer to the file, relative to the file pointer.
+	
+3) fstest.c 
+Driver program to test all the functions implemented.
+
+4) bs.c
+implementation of block read and block write
+
+Lessons Learnt :
+
+I have understood the different datastructures involved in building a filesystem, and how to implement different functions realted to the files.
